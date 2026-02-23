@@ -1,0 +1,85 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import JsonLD from '../../components/JsonLD.astro';
+import { getCollection, render } from 'astro:content';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  return posts.map(post => ({
+    params: { slug: post.id },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+
+const formattedDate = post.data.pubDate.toLocaleDateString('ja-JP', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+
+const breadcrumbs = [
+  { name: 'HOME', url: new URL('/', Astro.site).href },
+  { name: 'BLOG', url: new URL('/blog', Astro.site).href },
+  { name: post.data.title, url: Astro.url.href },
+];
+---
+
+<BaseLayout
+  title={post.data.title}
+  description={post.data.description}
+  type="article"
+  pubDate={post.data.pubDate}
+  updatedDate={post.data.updatedDate}
+>
+  <Fragment slot="head">
+    <JsonLD
+      type="article"
+      title={post.data.title}
+      description={post.data.description}
+      url={Astro.url.href}
+      pubDate={post.data.pubDate}
+      updatedDate={post.data.updatedDate}
+      breadcrumbs={breadcrumbs}
+      faq={post.data.faq}
+    />
+  </Fragment>
+
+  <article>
+    <div class="article-header">
+      <nav class="breadcrumb">
+        <a href="/">HOME</a><span>/</span>
+        <a href="/blog">BLOG</a><span>/</span>
+        <span>{post.data.title}</span>
+      </nav>
+      <h1>{post.data.title}</h1>
+      <div class="article-meta">
+        <span>{formattedDate}</span>
+        <span class="blog-card-category">{post.data.category}</span>
+      </div>
+      <div style="margin-top: 12px;">
+        {post.data.tags.map(tag => (
+          <span class="tag">#{tag}</span>
+        ))}
+      </div>
+    </div>
+
+    <div class="article-content">
+      <Content />
+
+      {post.data.faq && post.data.faq.length > 0 && (
+        <section class="faq-section">
+          <h2>よくある質問（FAQ）</h2>
+          {post.data.faq.map(item => (
+            <div class="faq-item">
+              <div class="faq-question">{item.question}</div>
+              <div class="faq-answer">{item.answer}</div>
+            </div>
+          ))}
+        </section>
+      )}
+    </div>
+  </article>
+</BaseLayout>

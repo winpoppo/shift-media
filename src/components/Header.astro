@@ -1,0 +1,19 @@
+---
+const navLinks = [
+  { href: '/', label: 'HOME' },
+  { href: '/blog', label: 'BLOG' },
+];
+---
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="/" class="site-logo">SHIFT<span>就活メディア</span></a>
+    <nav>
+      <ul class="nav-links">
+        {navLinks.map(link => (
+          <li><a href={link.href}>{link.label}</a></li>
+        ))}
+      </ul>
+    </nav>
+  </div>
+</header>

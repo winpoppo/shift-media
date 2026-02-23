@@ -1,0 +1,84 @@
+---
+interface FAQItem {
+  question: string;
+  answer: string;
+}
+
+interface Props {
+  type: 'article' | 'website';
+  title: string;
+  description: string;
+  url: string;
+  pubDate?: Date;
+  updatedDate?: Date;
+  breadcrumbs?: { name: string; url: string }[];
+  faq?: FAQItem[];
+}
+
+const { type, title, description, url, pubDate, updatedDate, breadcrumbs, faq } = Astro.props;
+
+const schemas: object[] = [];
+
+// Article schema
+if (type === 'article' && pubDate) {
+  schemas.push({
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: title,
+    description: description,
+    url: url,
+    datePublished: pubDate.toISOString(),
+    dateModified: (updatedDate || pubDate).toISOString(),
+    author: {
+      '@type': 'Organization',
+      name: 'SHIFT編集部',
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'SHIFT',
+      logo: {
+        '@type': 'ImageObject',
+        url: new URL('/logo.png', Astro.site).href,
+      },
+    },
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': url,
+    },
+  });
+}
+
+// BreadcrumbList schema
+if (breadcrumbs && breadcrumbs.length > 0) {
+  schemas.push({
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: breadcrumbs.map((crumb, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: crumb.name,
+      item: crumb.url,
+    })),
+  });
+}
+
+// FAQPage schema
+if (faq && faq.length > 0) {
+  schemas.push({
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faq.map(item => ({
+      '@type': 'Question',
+      name: item.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: item.answer,
+      },
+    })),
+  });
+}
+---
+
+{schemas.map(schema => (
+  <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+))}

@@ -1,0 +1,51 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import BlogCard from '../../components/BlogCard.astro';
+import JsonLD from '../../components/JsonLD.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('blog'))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+const breadcrumbs = [
+  { name: 'HOME', url: new URL('/', Astro.site).href },
+  { name: 'BLOG', url: new URL('/blog', Astro.site).href },
+];
+---
+
+<BaseLayout
+  title="ブログ一覧"
+  description="SHIFTの就活対策記事一覧。ES、面接、自己分析、志望動機など就活のあらゆるテーマを網羅。"
+>
+  <Fragment slot="head">
+    <JsonLD
+      type="website"
+      title="ブログ一覧"
+      description="SHIFTの就活対策記事一覧"
+      url={Astro.url.href}
+      breadcrumbs={breadcrumbs}
+    />
+  </Fragment>
+
+  <div class="article-header">
+    <nav class="breadcrumb">
+      <a href="/">HOME</a><span>/</span><span>BLOG</span>
+    </nav>
+    <h1>記事一覧</h1>
+    <p style="color: var(--color-text-muted);">就活に役立つ記事をテーマ別にお届けします</p>
+  </div>
+
+  <section class="section" style="padding-top: 0;">
+    <div class="blog-grid">
+      {posts.map(post => (
+        <BlogCard
+          title={post.data.title}
+          slug={post.id}
+          description={post.data.description}
+          pubDate={post.data.pubDate}
+          category={post.data.category}
+        />
+      ))}
+    </div>
+  </section>
+</BaseLayout>

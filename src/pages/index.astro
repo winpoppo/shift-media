@@ -1,0 +1,45 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import BlogCard from '../components/BlogCard.astro';
+import JsonLD from '../components/JsonLD.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('blog'))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+---
+
+<BaseLayout
+  title="SHIFT - 就活メディア"
+  description="SHIFTは就活生のための情報メディア。ES・面接・自己分析・志望動機など、内定獲得に必要なノウハウを発信します。"
+>
+  <Fragment slot="head">
+    <JsonLD
+      type="website"
+      title="SHIFT - 就活メディア"
+      description="就活生のための情報メディア"
+      url={Astro.url.href}
+    />
+  </Fragment>
+
+  <section class="hero">
+    <h1>就活を、<span class="accent">シフト</span>する。</h1>
+    <p>ES・面接・自己分析 ── 内定獲得に必要なすべてのノウハウを、わかりやすく発信。</p>
+    <a href="/blog" class="hero-cta">記事を読む →</a>
+  </section>
+
+  <section class="section">
+    <h2 class="section-title">最新記事</h2>
+    <p class="section-subtitle">就活に役立つ最新の記事をお届けします</p>
+    <div class="blog-grid">
+      {posts.map(post => (
+        <BlogCard
+          title={post.data.title}
+          slug={post.id}
+          description={post.data.description}
+          pubDate={post.data.pubDate}
+          category={post.data.category}
+        />
+      ))}
+    </div>
+  </section>
+</BaseLayout>
